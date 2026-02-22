@@ -1,0 +1,18 @@
+{
+  "name": "url-shortener",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev": "pnpm --filter backend dev & pnpm --filter frontend dev",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:generate": "pnpm --filter backend db:generate",
+    "db:reset": "docker compose down -v && docker compose up -d && sleep 2 && pnpm db:migrate",
+    "setup": "pnpm install && docker compose up -d && sleep 2 && pnpm db:migrate"
+  }
+}
