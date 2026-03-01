@@ -43,6 +43,7 @@ Opens the backend (port 3000) and frontend dev server (port 5173). Access everyt
 | `pnpm db:migrate` | Run database migrations |
 | `pnpm db:generate` | Generate migrations from schema changes |
 | `pnpm db:reset` | Destroy DB volume and re-migrate from scratch |
+| `pnpm test:backend` | Run backend integration tests |
 
 ## Architecture
 
@@ -69,8 +70,18 @@ The Snowflake uses a custom epoch of `2026-01-01` and the `@sapphire/snowflake` 
 The backend follows a layered architecture with dependency injection via factory functions:
 
 - **Presentation** — Fastify routes, Zod request validation, error handler
-- **Application** — `UrlService` orchestrates ID generation, encoding, and persistence
+- **Application** — `UrlService` orchestrates persistence, `ShortCodeGenerator` interface abstracts code generation strategy (currently Snowflake + base62, swappable)
 - **Repository** — Drizzle-based data access, isolated behind an interface
+
+## Testing
+
+Integration tests cover the critical path using Fastify's `inject` (no running server needed):
+
+- Shorten a URL and verify redirect (201 → 301)
+- Missing/invalid payload (400)
+- Unknown short code (404)
+
+Run with `pnpm test:backend`. Requires a running PostgreSQL instance.
 
 ## Trade-offs & Decisions
 

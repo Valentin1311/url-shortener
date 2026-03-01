@@ -1,8 +1,11 @@
-export interface ShortenResult {
-  shortCode: string;
-  shortUrl: string;
-  originalUrl: string;
-}
+import { z } from "zod";
+
+const shortenResultSchema = z.object({
+  shortCode: z.string(),
+  shortUrl: z.string().url(),
+});
+
+export type ShortenResult = z.infer<typeof shortenResultSchema>;
 
 export async function shortenUrl(url: string): Promise<ShortenResult> {
   const response = await fetch("/api/shorten", {
@@ -14,8 +17,14 @@ export async function shortenUrl(url: string): Promise<ShortenResult> {
   const body = await response.json();
 
   if (!response.ok) {
-    throw new Error(body.message ?? body.error ?? "Failed to shorten URL");
+    throw new Error("Unknown error occurred while shortening the URL");
   }
 
-  return body as ShortenResult;
+  const parsed = shortenResultSchema.safeParse(body);
+
+  if (!parsed.success) {
+    throw new Error("Unexpected response from server");
+  }
+
+  return parsed.data;
 }
