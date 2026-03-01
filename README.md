@@ -62,7 +62,7 @@ Each URL is assigned a **Snowflake ID** (64-bit, time-sortable unique identifier
 - Range from 7 to 11 characters, growing gradually over time
 - 11 characters covers the entire 64-bit space (`62^11 > 2^64`), so codes will **never exceed 11 chars**
 
-The Snowflake uses a custom epoch of `2025-01-01` and the `@sapphire/snowflake` library.
+The Snowflake uses a custom epoch of `2026-01-01` and the `@sapphire/snowflake` library.
 
 ### Backend Layers
 

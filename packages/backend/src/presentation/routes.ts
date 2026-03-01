@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import type { UrlService } from "../application/url.service.js";
+import type { UrlService } from "../application/url.service";
 
 const shortenBodySchema = z.object({
   url: z.string().url("Invalid URL format"),
@@ -11,7 +11,7 @@ const resolveParamsSchema = z.object({
   shortCode: z.string().min(1),
 });
 
-export function registerRoutes(app: FastifyInstance, urlService: UrlService) {
+export function registerUrlRoutes(app: FastifyInstance, urlService: UrlService) {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
 
   typedApp.post("/api/shorten", {
@@ -19,13 +19,12 @@ export function registerRoutes(app: FastifyInstance, urlService: UrlService) {
   }, async (request, reply) => {
     const { url } = request.body;
 
-    const result = await urlService.shortenUrl(url);
-    const shortUrl = `${request.protocol}://${request.host}/${result.shortCode}`;
+    const { shortCode } = await urlService.shortenUrl(url);
+    const shortUrl = `${request.protocol}://${request.host}/${shortCode}`;
 
     return reply.status(201).send({
-      shortCode: result.shortCode,
-      shortUrl,
-      originalUrl: result.originalUrl,
+      shortCode,
+      shortUrl
     });
   });
 

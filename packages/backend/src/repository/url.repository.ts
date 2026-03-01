@@ -1,20 +1,20 @@
 import { eq } from "drizzle-orm";
-import type { Database } from "../db.js";
-import { urls } from "../schema.js";
-import { DatabaseError } from "../errors.js";
+import type { Database } from "../db";
+import { urls } from "../schema";
+import { DatabaseError } from "../errors";
 
 export interface UrlRepository {
-  insert(id: bigint, shortCode: string, originalUrl: string): Promise<void>;
+  insert(shortCode: string, originalUrl: string): Promise<void>;
   findByShortCode(
     shortCode: string,
-  ): Promise<{ id: bigint; shortCode: string; originalUrl: string; createdAt: Date } | null>;
+  ): Promise<{ shortCode: string; originalUrl: string; createdAt: Date } | null>;
 }
 
 export function createDrizzleUrlRepository(db: Database): UrlRepository {
   return {
-    async insert(id: bigint, shortCode: string, originalUrl: string) {
+    async insert(shortCode: string, originalUrl: string) {
       try {
-        await db.insert(urls).values({ id, shortCode, originalUrl });
+        await db.insert(urls).values({ shortCode, originalUrl });
       } catch (error) {
         throw new DatabaseError(
           `Failed to insert URL: ${error instanceof Error ? error.message : String(error)}`,

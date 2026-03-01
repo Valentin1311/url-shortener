@@ -4,20 +4,19 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import type { Config } from "./config.js";
-import { createDrizzleDb } from "./db.js";
-import { createDrizzleUrlRepository } from "./repository/url.repository.js";
-import { createUrlService } from "./application/url.service.js";
-import { createUniqueIdGenerator } from "./lib/snowflake.js";
-import { base62Encode } from "./lib/base62.js";
-import { registerRoutes } from "./presentation/routes.js";
-import { errorHandler } from "./presentation/error-handler.js";
+import type { Config } from "./config";
+import { createDrizzleDb } from "./db";
+import { createDrizzleUrlRepository } from "./repository/url.repository";
+import { createUrlService } from "./application/url.service";
+import { registerUrlRoutes } from "./presentation/routes";
+import { globalErrorHandler } from "./presentation/error-handler";
+import { createSnowflakeShortCodeGenerator } from "./application/short-code.service";
 
 export async function buildApp(config: Config) {
   const db = createDrizzleDb(config.DATABASE_URL);
-  const repository = createDrizzleUrlRepository(db);
-  const generateUniqueId = createUniqueIdGenerator();
-  const urlService = createUrlService({ repository, generateUniqueId, base62Encode });
+  const urlRepository = createDrizzleUrlRepository(db);
+  const shortCodeGenerator = createSnowflakeShortCodeGenerator();
+  const urlService = createUrlService({ urlRepository, shortCodeGenerator });
 
   const app = Fastify({ logger: true, trustProxy: true });
   app.setValidatorCompiler(validatorCompiler);
@@ -25,11 +24,11 @@ export async function buildApp(config: Config) {
 
   await app.register(cors, { origin: true });
 
-  app.setErrorHandler(errorHandler);
+  app.setErrorHandler(globalErrorHandler);
 
   app.get("/health", async () => ({ status: "ok" }));
 
-  registerRoutes(app, urlService);
+  registerUrlRoutes(app, urlService);
 
   return app;
 }

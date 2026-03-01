@@ -1,25 +1,24 @@
-import type { UrlRepository } from "../repository/url.repository.js";
-import { NotFoundError } from "../errors.js";
+import type { UrlRepository } from "../repository/url.repository";
+import { NotFoundError } from "../errors";
+import { ShortCodeGenerator } from "./short-code.service";
 
 interface UrlServiceDeps {
-  repository: UrlRepository;
-  generateUniqueId: () => bigint;
-  base62Encode: (n: bigint) => string;
+  urlRepository: UrlRepository;
+  shortCodeGenerator: ShortCodeGenerator;
 }
 
-export function createUrlService({ repository, generateUniqueId, base62Encode }: UrlServiceDeps) {
+export function createUrlService({ urlRepository, shortCodeGenerator }: UrlServiceDeps) {
   return {
     async shortenUrl(originalUrl: string) {
-      const uniqueId = generateUniqueId();
-      const shortCode = base62Encode(uniqueId);
+      const shortCode = shortCodeGenerator.generateShortCode();
 
-      await repository.insert(uniqueId, shortCode, originalUrl);
+      await urlRepository.insert(shortCode, originalUrl);
 
-      return { id: uniqueId, shortCode, originalUrl };
+      return { shortCode };
     },
 
     async resolveUrl(shortCode: string) {
-      const row = await repository.findByShortCode(shortCode);
+      const row = await urlRepository.findByShortCode(shortCode);
 
       if (!row) {
         throw new NotFoundError(`Short code "${shortCode}" not found`);
