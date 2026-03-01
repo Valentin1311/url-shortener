@@ -9,9 +9,7 @@ if ! command -v node &>/dev/null; then
 fi
 
 if ! command -v pnpm &>/dev/null; then
-  echo "pnpm not found, installing via corepack..."
-  corepack enable
-  corepack prepare pnpm@latest --activate
+  echo "Error: pnpm is not installed. Install pnpm globally and try again."
 fi
 
 if ! command -v docker &>/dev/null; then
